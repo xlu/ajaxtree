@@ -1,0 +1,16 @@
+<h2>Group Categorization</h2>
+<div> You can:
+  <ol>
+    <li>Update group/category name</li>
+    <li>move groups into different categories</li>
+    <li>sort group/category alphabetically</li>
+</ol>
+<div> You cannot: change the order of groups within a category/group/root </div>
+
+<div id="ajaxtree" style="width:60%;float:left;">
+ <%= render :partial=>"items/ajax_tree", :object=>[@item,@items] %>
+</div>
+
+<div id="selected_item">
+ <%= render :partial=>"items/item", :object=>@item %>
+</div>

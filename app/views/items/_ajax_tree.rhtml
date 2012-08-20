@@ -1,0 +1,154 @@
+<script src="http://code.jquery.com/jquery-1.6.3.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+  jQuery.noConflict();
+</script>
+
+<script type="text/javascript">
+
+jQuery("document").ready(function() {
+  jQuery(".edit_item").click(function() {
+    var item_id = jQuery(this).attr('id').replace('edit_item_', '');
+    jQuery('#item_'+item_id).removeAttr('disabled');
+  });
+  jQuery('.item').blur(function() {
+    jQuery(this).attr("disabled", "disabled");
+    //alert("blur is called" + jQuery(this).attr('id') + ", " + jQuery(this).attr('value'));
+    if (jQuery(this).attr('name') != jQuery(this).attr('value'))
+    {
+      jQuery.ajax({
+         type: 'post',
+         url: '/items/update_item',
+         async: true,
+         data: {
+           'item_id': jQuery(this).attr('id').replace('item_', ''),
+           'new_name': jQuery(this).attr('value'),
+         },
+         dataType: 'script'
+      });
+    }
+  });
+});
+function toggleDiv()
+{
+  Element.toggle('mytree');
+  Element.toggle('expanded');
+  Element.toggle('collapsed');
+  return false;
+}
+function showDrag()
+{
+  var drag_images = $$('img.drag_image');
+  drag_images.all(function(value,index){return value.style.display='inline';});
+  Element.toggle('done');
+  Element.toggle('reorder');
+  return false;
+}
+function hideDrag()
+{
+  var drag_images = $$('img.drag_image');
+  drag_images.all(function(value,index){return value.style.display='none';});
+  Element.toggle('done');
+  Element.toggle('reorder');
+  return false;
+}
+</script>
+
+<style>
+input[disabled='disabled'] { background-color: whiteSmoke;}
+
+.mytree{padding:0 0 0 0px;}
+
+.mytree li {padding:2 0 0 3px;}
+
+.outer_tree_element{margin:0 0 0 10px;}
+
+.inner_tree_element{margin:5px 0 0 10px;}
+
+.mytree a{text-decoration:none; font-size:13px; color:black;}
+
+.mytree a:hover{background-color:lightblue;}
+
+.mytree label{font-weight:normal;}
+
+.highlighted{background-color:lightblue;}
+
+.normal{background-color:white;}
+
+.drag_image{border:0px;}
+
+</style>
+
+<div id="mytree" class="mytree">
+
+  <% @ancestors = @item.ancestors.collect{|parent| parent.id} if true %>
+
+  <%# @items = Item.find(:all) %>
+  <% @items = Item.find(:all, :order => "name asc, created_at asc") %>
+
+  <%= get_tree_data(@items, 0) do |node|
+    node.name
+   end
+  %>
+<% if false %>  <!-- original -->
+  <%= get_tree_data(@items, 0){|node|
+      link_to_remote(node.name,
+      :url=>{:controller=>'items', :action=>'display_clicked_item', :id=>node.id},
+      :loading=>"Element.show('tree_indicator')",
+      :complete=>"Element.hide('tree_indicator')"
+      )
+  }
+  %>
+<% end %>
+<% if true %>
+  <% @items.each do |node| %>
+  <%= draggable_element node.id.to_s+'_tree_div',:revert=>true,:snap=>false, :handle=>"'#{node.id.to_s}_drag_image'" %>
+  <%= drop_receiving_element node.id.to_s+'_tree_div',
+      :accept=>'inner_tree_element',
+  :url=>{:controller=>'items',:action=>'sort_ajax_tree', :parent_id=>node.id,:id=>nil},
+  :loading=>"Element.show('sort_tree_indicator')",
+  :complete=>"Element.hide('sort_tree_indicator')"
+  %>
+
+  <% end %>
+<% end %>
+
+  <%= image_tag 'indicator.gif', :id=>'tree_indicator', :style=>'display:none' %>
+  <%= image_tag 'indicator.gif', :id=>'sort_tree_indicator', :style=>'display:none' %>
+</div>
+
+<script type="text/javascript">
+
+  var selected_el = document.getElementById('<%=@item.id%>_tree_item');
+  selected_el.className='highlighted';
+
+  function update_item_name(id, name)
+  {
+    alert("You have updated=" + this.id);
+    return false;
+  }
+  function toggleMyTree(id)
+  {
+  Element.toggle(id+'collapsed');
+  Element.toggle(id+'expanded');
+  Element.toggle(id+'children');
+  return false;
+  }
+  function toggleBackground(el)
+  {
+  // using collection proxies to change the background
+  var highlighted_el = $$("span.highlighted");
+  highlighted_el.all(function(value,index){return value.className='normal'});
+
+  el.className='highlighted';
+  selected_el = el;
+  return false;
+  }
+  function openMyTree(id)
+  {
+  Element.hide(id+'collapsed');
+  Element.show(id+'expanded');
+  Element.show(id+'children');
+  return false;
+  }
+
+</script>

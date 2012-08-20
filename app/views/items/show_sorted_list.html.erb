@@ -1,0 +1,127 @@
+test show_sorted_list
+<!-- http://railscasts.com/episodes/147-sortable-lists-revised?autoplay=true -->
+<% if true %>
+<!-- http://linssen.me/entry/extending-the-jquery-sortable-with-ajax-mysql/ -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>jQuery Sortable With AJAX &amp; MYSQL</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+<!--<link rel='stylesheet' href='styles.css' type='text/css' media='all' /> -->
+
+
+<style>
+* {	margin: 0; padding: 0; }
+
+body {
+	font: 0.9em Arial;
+	padding: 40px;
+}
+
+#info {
+	display: block;
+	padding: 10px; margin-bottom: 20px;
+	border: 1px solid #333;
+	background-color: #efefef;
+}
+
+#test-list {
+	list-style: none;
+}
+
+#test-list li {
+	display: block;
+	padding: 20px 10px; margin-bottom: 3px;
+	background-color: #efefef;
+}
+
+#test-list li img.handle {
+	margin-right: 20px;
+	cursor: move;
+}
+</style>
+
+<script type="text/javascript">
+  // When the document is ready set up our sortable with it's inherant function(s)
+  $(document).ready(function() {
+    $("#test-list").sortable({
+      handle : '.handle',
+      update : function () {
+      //alert("test="+$('#test-list').sortable('serialize'));
+		  var order = $('#test-list').sortable('serialize');
+        $.ajax({
+             type: 'post',
+             data: $('#test-list').sortable('serialize'),
+             dataType: 'script',
+             complete: function(request){
+             $('#test-list').effect('highlight');
+             },
+             url: '/items/sort_list'});
+      }
+    });
+});
+</script>
+</head>
+
+<body>
+<pre>
+<div id="info">Waiting for update</div>
+</pre>
+<ul id="test-list">
+  <li id="listItem_1"><img src="arrow.png" alt="move" width="16" height="16" class="handle" /><strong>Item 1 </strong>with a link to <a href="http://www.google.co.uk/" rel="nofollow">Google</a></li>
+  <li id="listItem_2"><img src="arrow.png" alt="move" width="16" height="16" class="handle" /><strong>Item 2</strong></li>
+  <li id="listItem_3"><img src="arrow.png" alt="move" width="16" height="16" class="handle" /><strong>Item 3</strong></li>
+  <li id="listItem_4"><img src="arrow.png" alt="move" width="16" height="16" class="handle" /><strong>Item 4</strong></li>
+</ul>
+
+<form action="/items/sort_list" method="post" name="sortables">
+    <input type="hidden" name="test-log" id="test-log" />
+</form>
+</body>
+</html>
+<% end %> <!-- if false -->
+
+
+<% if false %>
+<!-- http://webtempest.com/sortable-list-in-ruby-on-rails-3-almost-unobtrusive-jquery/-->
+
+<style>
+  .handle:hover{cursor: move;}
+</style>
+<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js",
+                           "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js", "rails.js" %>
+<% content_for :javascript do %>
+// Sorting the list
+$(document).ready(function(){
+  $('#items').sortable({
+    axis: 'y',
+    dropOnEmpty: false,
+    handle: '.handle',
+    cursor: 'crosshair',
+    items: 'li',
+    opacity: 0.4,
+    scroll: true,
+    update: function(){
+    alert("test");
+    $.ajax({
+      type: 'post',
+      data: $('#items').sortable('serialize'),
+      dataType: 'script',
+      complete: function(request){
+      $('#items').effect('highlight');
+      },
+      url: '/items/sort_list'})
+  }
+  });
+});
+<% end %>
+
+<h1>Listing books</h1>
+<ul id="items"> <% @items.each do |item| %>
+  <li id="item_<%= item.id %>"><span class="handle">[drag]</span><%= item.name %></li>
+<% end %></ul>
+<%#= link_to 'New book', new_book_path %>
+
+<% end %> <!-- end of false -->
